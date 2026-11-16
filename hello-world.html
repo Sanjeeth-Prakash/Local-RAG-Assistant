@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hello World Animation</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    .container {
+      position: relative;
+      width: 80vw;
+      height: 40vh;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    .hello-world {
+      font-size: 5rem;
+      font-weight: bold;
+      color: white;
+      text-shadow: 2px 2px 20px rgba(0, 0, 0, 0.5);
+      position: relative;
+      z-index: 10;
+      animation: glow 2s ease-in-out infinite alternate;
+    }
+    @keyframes glow {
+      from {
+        text-shadow: 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #667eea, 0 0 50px #667eea, 0 0 60px #667eea;
+      }
+      to {
+        text-shadow: 0 0 10px #fff, 0 0 20px #ff00ff, 0 0 30px #ff00ff, 0 0 40px #ff00ff;
+      }
+    }
+    .moving-chars {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+    .char {
+      position: absolute;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 1.2rem;
+      font-weight: bold;
+      animation: float 10s infinite linear;
+    }
+    @keyframes float {
+      from {
+        transform: translateX(-100vw) translateY(0);
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      90% {
+        opacity: 1;
+      }
+      to {
+        transform: translateX(100vw) translateY(-50vh);
+        opacity: 0;
+      }
+    }
+    .controls {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 0 10px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+    .speed-control {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 20;
+      color: white;
+    }
+    input[type="range"] {
+      margin-left: 10px;
+      width: 100px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="hello-world" id="helloText">HELLO WORLD</div>
+    <div class="moving-chars" id="charContainer"></div>
+
+    <div class="speed-control">
+      <label for="speed">Animation Speed:</label>
+      <input type="range" id="speed" min="0.5" max="5" step="0.1" value="1">
+    </div>
+
+    <div class="controls">
+      <button id="pauseBtn">Pause Animation</button>
+      <button id="restartBtn">Restart Animation</button>
+    </div>
+  </div>
+
+  <script>
+    // Create moving characters
+    function createMovingChars() {
+      const container = document.getElementById('charContainer');
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
+
+      for (let i = 0; i < 100; i++) {
+        const char = document.createElement('div');
+        char.className = 'char';
+        char.textContent = chars[Math.floor(Math.random() * chars.length)];
+
+        // Random starting position and properties
+        const startY = Math.random() * 100;
+        char.style.top = `${startY}vh`;
+        char.style.left = `${Math.random() * 100}vw`;
+        char.style.fontSize = `${Math.random() * 2 + 0.5}rem`;
+        char.style.animationDelay = `${Math.random() * 10}s`;
+        char.style.color = `hsl(${Math.random() * 360}, 70%, 50%)`;
+
+        container.appendChild(char);
+      }
+    }
+
+    // Control animation speed
+    let speed = 1;
+    const speedInput = document.getElementById('speed');
+
+    if (speedInput) {
+      speedInput.addEventListener('input', (e) => {
+        speed = parseFloat(e.target.value);
+        updateAnimationSpeed(speed);
+      });
+    }
+
+    function updateAnimationSpeed(newSpeed) {
+      const chars = document.querySelectorAll('.char');
+      chars.forEach(char => {
+        const currentDelay = parseFloat(char.style.animationDelay) || 0;
+        const currentDuration = 10 / speed; // Base duration is 10s
+        char.style.animationDuration = `${currentDuration}s`;
+      });
+    }
+
+    // Pause/restart functionality
+    let isPaused = false;
+    const pauseBtn = document.getElementById('pauseBtn');
+    const restartBtn = document.getElementById('restartBtn');
+
+    if (pauseBtn) {
+      pauseBtn.addEventListener('click', () => {
+        isPaused = !isPaused;
+        const chars = document.querySelectorAll('.char');
+        chars.forEach(char => {
+          if (isPaused) {
+            char.style.animationPlayState = 'paused';
+            pauseBtn.textContent = 'Resume Animation';
+          } else {
+            char.style.animationPlayState = 'running';
+            pauseBtn.textContent = 'Pause Animation';
+          }
+        });
+      });
+    }
+
+    if (restartBtn) {
+      restartBtn.addEventListener('click', () => {
+        const container = document.getElementById('charContainer');
+        container.innerHTML = '';
+        createMovingChars();
+      });
+    }
+
+    // Initialize
+    createMovingChars();
+
+    // Add interactive particles on mouse move
+    document.addEventListener('mousemove', (e) => {
+      if (Math.random() < 0.1) { // 10% chance
+        createParticle(e.clientX, e.clientY);
+      }
+    });
+
+    function createParticle(x, y) {
+      const particle = document.createElement('div');
+      particle.style.position = 'absolute';
+      particle.style.left = `${x}px`;
+      particle.style.top = `${y}px`;
+      particle.style.width = '2px';
+      particle.style.height = '2px';
+      particle.style.background = `hsl(${Math.random() * 360}, 100%, 50%)`;
+      particle.style.borderRadius = '50%';
+      particle.style.pointerEvents = 'none';
+      particle.style.animation = 'fadeInOut 1s ease-out';
+
+      document.body.appendChild(particle);
+
+      setTimeout(() => {
+        particle.remove();
+      }, 1000);
+    }
+
+    // Add fadeInOut animation
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fadeInOut {
+        0% { opacity: 0; transform: scale(0); }
+        50% { opacity: 1; transform: scale(1); }
+        100% { opacity: 0; transform: scale(2); }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
+</body>
+</html>
